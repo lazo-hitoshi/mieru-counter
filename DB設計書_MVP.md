@@ -7,8 +7,10 @@
 | プロジェクト名 | Mieru Counter |
 | 対象フェーズ | MVP |
 | 想定DB | PostgreSQL |
+| 本番DB | Supabase PostgreSQL（ap-southeast-2） |
 | 開発時代替 | SQLite可 |
 | 作成日 | 2026-06-27 |
+| 最終更新日 | 2026-06-28 |
 
 ## 2. DB設計方針
 

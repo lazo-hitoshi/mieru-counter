@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mieru Counter
 
-## Getting Started
+聴覚障害者・難聴者・高齢者が窓口で会話内容を理解しやすくするための、リアルタイム字幕・重要事項カード表示サービス。
 
-First, run the development server:
+## 本番URL
+
+https://mieru-counter.vercel.app
+
+## 技術スタック
+
+| 項目 | 技術 |
+|------|------|
+| フレームワーク | Next.js 16（App Router） |
+| 言語 | TypeScript |
+| スタイリング | Tailwind CSS v4 |
+| ORM | Prisma v7（@prisma/adapter-pg） |
+| データベース | Supabase PostgreSQL |
+| ホスティング | Vercel |
+| リアルタイム通信 | Socket.IO |
+
+## ローカル開発
 
 ```bash
+cd app
+npm install
+cp .env.example .env.local  # DATABASE_URLを設定
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+http://localhost:3000 でアクセス。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 画面一覧
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| パス | 画面 | 用途 |
+|------|------|------|
+| `/` | ホーム | 各画面への導線 |
+| `/staff` | スタッフ画面 | セッション管理・字幕送信 |
+| `/visitor` | 利用者画面 | 字幕表示・確認ボタン |
+| `/lens` | Lens Preview | スマートグラス表示プレビュー |
+| `/admin` | 管理画面 | 施設・定型文管理 |
+| `/api/health` | ヘルスチェック | DB接続確認 |
 
-## Learn More
+## デプロイ
 
-To learn more about Next.js, take a look at the following resources:
+mainブランチへのpushで自動デプロイ（Vercel）。
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 環境変数（Vercel）
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| 変数名 | 説明 |
+|--------|------|
+| `DATABASE_URL` | Supabase PostgreSQL接続文字列 |
