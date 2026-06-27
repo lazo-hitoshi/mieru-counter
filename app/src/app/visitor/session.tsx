@@ -64,7 +64,11 @@ export default function VisitorSession({
   const [sessionEnded, setSessionEnded] = useState(false);
   const [latestCaption, setLatestCaption] = useState<TranscriptEntry | null>(null);
   const [captionFade, setCaptionFade] = useState(false);
+  const [messageInput, setMessageInput] = useState("");
+  const [sending, setSending] = useState(false);
+  const [showInput, setShowInput] = useState(false);
   const transcriptEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   // SSE real-time events
   useSessionEvents(sessionId, {
@@ -122,6 +126,27 @@ export default function VisitorSession({
     });
     setLastAction(actionType);
     setTimeout(() => setLastAction(null), 2500);
+  }
+
+  async function sendMessage() {
+    const text = messageInput.trim();
+    if (!text || sending) return;
+    setSending(true);
+    try {
+      await fetch(`/api/sessions/${sessionId}/transcripts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text,
+          speakerType: "visitor",
+          source: "manual",
+        }),
+      });
+      setMessageInput("");
+    } finally {
+      setSending(false);
+      inputRef.current?.focus();
+    }
   }
 
   // Call notification overlay
@@ -192,14 +217,19 @@ export default function VisitorSession({
           {/* Live caption */}
           <div className="bg-slate-50 border-b-2 border-emerald-200 px-6 py-8 min-h-[140px] flex items-center justify-center">
             {latestCaption ? (
-              <p
-                className={`text-center font-medium leading-relaxed text-slate-800 max-w-lg transition-opacity duration-300 ${
-                  captionFade ? "opacity-100" : "opacity-0"
-                }`}
-                style={{ fontSize: `${fontSize}px` }}
-              >
-                {latestCaption.originalText}
-              </p>
+              <div className="text-center max-w-lg">
+                {latestCaption.speakerType === "visitor" && (
+                  <p className="text-xs text-emerald-500 font-medium mb-1">あなたのメッセージ</p>
+                )}
+                <p
+                  className={`font-medium leading-relaxed text-slate-800 transition-opacity duration-300 ${
+                    captionFade ? "opacity-100" : "opacity-0"
+                  }`}
+                  style={{ fontSize: `${fontSize}px` }}
+                >
+                  {latestCaption.originalText}
+                </p>
+              </div>
             ) : (
               <div className="text-center text-slate-400">
                 <div className="text-3xl mb-2">👂</div>
@@ -247,7 +277,7 @@ export default function VisitorSession({
             </div>
           )}
 
-          {/* Confirmation buttons */}
+          {/* Message input & Confirmation buttons */}
           <div className="mt-auto px-4 py-4 bg-slate-50 border-t border-slate-200 safe-area-bottom">
             {lastAction && (
               <div className="text-center mb-2">
@@ -256,8 +286,57 @@ export default function VisitorSession({
                 </span>
               </div>
             )}
+
+            {/* Text input area */}
+            {showInput ? (
+              <div className="mb-3">
+                <div className="flex gap-2">
+                  <textarea
+                    ref={inputRef}
+                    value={messageInput}
+                    onChange={(e) => setMessageInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                      }
+                    }}
+                    placeholder="メッセージを入力..."
+                    disabled={sessionEnded || sending}
+                    rows={2}
+                    className="flex-1 border-2 border-emerald-300 rounded-2xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none disabled:opacity-40"
+                    style={{ fontSize: `${Math.max(fontSize - 4, 14)}px` }}
+                  />
+                  <button
+                    onClick={sendMessage}
+                    disabled={!messageInput.trim() || sessionEnded || sending}
+                    className="self-end px-5 py-3 bg-emerald-600 text-white rounded-2xl font-bold text-base hover:bg-emerald-700 active:scale-95 transition-all disabled:opacity-40 shadow-sm"
+                  >
+                    送信
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
+            {/* Toggle input button + confirmation buttons */}
             <div className="grid grid-cols-3 gap-2">
-              {CONFIRMATION_BUTTONS.slice(0, 3).map((btn) => (
+              <button
+                onClick={() => {
+                  setShowInput(!showInput);
+                  if (!showInput) setTimeout(() => inputRef.current?.focus(), 100);
+                }}
+                disabled={sessionEnded}
+                className={`py-3.5 rounded-2xl font-medium transition-all active:scale-95 disabled:opacity-40 shadow-sm ${
+                  showInput
+                    ? "bg-emerald-600 text-white"
+                    : "bg-slate-600 hover:bg-slate-700 text-white"
+                }`}
+                style={{ fontSize: `${Math.max(fontSize - 6, 12)}px` }}
+              >
+                <span className="block text-lg mb-0.5">✏️</span>
+                {showInput ? "閉じる" : "文字で伝える"}
+              </button>
+              {CONFIRMATION_BUTTONS.slice(0, 2).map((btn) => (
                 <button
                   key={btn.type}
                   onClick={() => sendConfirmation(btn.type)}
@@ -270,8 +349,8 @@ export default function VisitorSession({
                 </button>
               ))}
             </div>
-            <div className="grid grid-cols-2 gap-2 mt-2">
-              {CONFIRMATION_BUTTONS.slice(3).map((btn) => (
+            <div className="grid grid-cols-3 gap-2 mt-2">
+              {CONFIRMATION_BUTTONS.slice(2).map((btn) => (
                 <button
                   key={btn.type}
                   onClick={() => sendConfirmation(btn.type)}
@@ -279,7 +358,7 @@ export default function VisitorSession({
                   className={`${btn.color} text-white py-3 rounded-2xl font-medium transition-all active:scale-95 disabled:opacity-40 shadow-sm`}
                   style={{ fontSize: `${Math.max(fontSize - 6, 12)}px` }}
                 >
-                  <span className="mr-1">{btn.icon}</span>
+                  <span className="block text-lg mb-0.5">{btn.icon}</span>
                   {btn.label}
                 </button>
               ))}
@@ -316,9 +395,20 @@ export default function VisitorSession({
             </p>
             <div className="space-y-2">
               {transcripts.map((t) => (
-                <div key={t.id} className="bg-slate-50 rounded-lg p-3">
+                <div
+                  key={t.id}
+                  className={`rounded-lg p-3 ${
+                    t.speakerType === "visitor"
+                      ? "bg-emerald-50 border border-emerald-200"
+                      : "bg-slate-50"
+                  }`}
+                >
                   <span className="text-[10px] text-slate-400 font-medium">
-                    {t.speakerType === "staff" ? "スタッフ" : "システム"}
+                    {t.speakerType === "staff"
+                      ? "スタッフ"
+                      : t.speakerType === "visitor"
+                        ? "あなた"
+                        : "システム"}
                   </span>
                   <p className="text-sm text-slate-700 mt-0.5">{t.originalText}</p>
                 </div>
