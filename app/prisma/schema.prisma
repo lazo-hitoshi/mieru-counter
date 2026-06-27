@@ -1,0 +1,294 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Organization {
+  id               String   @id @default(uuid())
+  name             String
+  organizationType String   @map("organization_type")
+  status           String   @default("active")
+  contactEmail     String?  @map("contact_email")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  facilities Facility[]
+  users      User[]
+  templates  MessageTemplate[]
+  auditLogs  AuditLog[]
+
+  @@map("organizations")
+}
+
+model Facility {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  name           String
+  facilityType   String   @map("facility_type")
+  address        String?
+  phone          String?
+  status         String   @default("active")
+  settingsJson   String?  @map("settings_json")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization      @relation(fields: [organizationId], references: [id])
+  counters     Counter[]
+  users        User[]
+  sessions     Session[]
+  templates    MessageTemplate[]
+  auditLogs    AuditLog[]
+
+  @@index([organizationId])
+  @@map("facilities")
+}
+
+model Counter {
+  id          String   @id @default(uuid())
+  facilityId  String   @map("facility_id")
+  name        String
+  counterCode String?  @map("counter_code")
+  qrToken     String   @unique @map("qr_token")
+  status      String   @default("active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  facility          Facility           @relation(fields: [facilityId], references: [id])
+  sessions          Session[]
+  callNotifications CallNotification[]
+
+  @@index([facilityId])
+  @@map("counters")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  organizationId String  @map("organization_id")
+  facilityId   String?   @map("facility_id")
+  name         String
+  email        String    @unique
+  role         String    @default("staff")
+  passwordHash String?   @map("password_hash")
+  status       String    @default("active")
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  organization        Organization         @relation(fields: [organizationId], references: [id])
+  facility             Facility?            @relation(fields: [facilityId], references: [id])
+  staffSessions        Session[]            @relation("StaffSession")
+  transcriptEntries    TranscriptEntry[]
+  reviewedItems        ImportantItem[]      @relation("ReviewedBy")
+  handledConfirmations ConfirmationAction[] @relation("HandledBy")
+  sentCallNotifications CallNotification[]
+  auditLogs            AuditLog[]
+
+  @@index([organizationId])
+  @@index([facilityId])
+  @@map("users")
+}
+
+model Session {
+  id             String    @id @default(uuid())
+  organizationId String    @map("organization_id")
+  facilityId     String    @map("facility_id")
+  counterId      String    @map("counter_id")
+  staffUserId    String?   @map("staff_user_id")
+  sessionCode    String    @unique @map("session_code")
+  status         String    @default("waiting")
+  visitorLabel   String?   @map("visitor_label")
+  language       String    @default("ja")
+  startedAt      DateTime? @map("started_at")
+  endedAt        DateTime? @map("ended_at")
+  expiresAt      DateTime  @map("expires_at")
+  metadataJson   String?   @map("metadata_json")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  facility            Facility             @relation(fields: [facilityId], references: [id])
+  counter             Counter              @relation(fields: [counterId], references: [id])
+  staffUser           User?                @relation("StaffSession", fields: [staffUserId], references: [id])
+  transcriptEntries   TranscriptEntry[]
+  importantItems      ImportantItem[]
+  confirmationActions ConfirmationAction[]
+  callNotifications   CallNotification[]
+  lensEvents          LensEvent[]
+  consentRecords      ConsentRecord[]
+
+  @@index([organizationId, createdAt])
+  @@index([facilityId, createdAt])
+  @@index([counterId, status])
+  @@map("sessions")
+}
+
+model ConsentRecord {
+  id                 String    @id @default(uuid())
+  sessionId          String    @map("session_id")
+  consentType        String    @map("consent_type")
+  consented          Boolean
+  consentTextVersion String    @map("consent_text_version")
+  consentedAt        DateTime  @map("consented_at")
+  revokedAt          DateTime? @map("revoked_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+
+  session Session @relation(fields: [sessionId], references: [id])
+
+  @@index([sessionId])
+  @@map("consent_records")
+}
+
+model TranscriptEntry {
+  id              String   @id @default(uuid())
+  sessionId       String   @map("session_id")
+  speakerType     String   @map("speaker_type")
+  speakerName     String?  @map("speaker_name")
+  source          String
+  originalText    String   @map("original_text")
+  displayText     String   @map("display_text")
+  language        String   @default("ja")
+  confidence      Float?
+  sequenceNo      Int      @map("sequence_no")
+  createdByUserId String?  @map("created_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  session       Session        @relation(fields: [sessionId], references: [id])
+  createdByUser User?          @relation(fields: [createdByUserId], references: [id])
+  importantItems ImportantItem[] @relation("SourceTranscript")
+
+  @@index([sessionId, sequenceNo])
+  @@index([sessionId, createdAt])
+  @@map("transcript_entries")
+}
+
+model ImportantItem {
+  id                       String    @id @default(uuid())
+  sessionId                String    @map("session_id")
+  sourceTranscriptEntryId  String?   @map("source_transcript_entry_id")
+  itemType                 String    @map("item_type")
+  title                    String
+  body                     String
+  priority                 String    @default("normal")
+  extractionSource         String    @map("extraction_source")
+  reviewStatus             String    @default("candidate") @map("review_status")
+  reviewedByUserId         String?   @map("reviewed_by_user_id")
+  sentAt                   DateTime? @map("sent_at")
+  displayUntil             DateTime? @map("display_until")
+  metadataJson             String?   @map("metadata_json")
+  createdAt                DateTime  @default(now()) @map("created_at")
+  updatedAt                DateTime  @updatedAt @map("updated_at")
+
+  session              Session          @relation(fields: [sessionId], references: [id])
+  sourceTranscriptEntry TranscriptEntry? @relation("SourceTranscript", fields: [sourceTranscriptEntryId], references: [id])
+  reviewedByUser       User?            @relation("ReviewedBy", fields: [reviewedByUserId], references: [id])
+
+  @@index([sessionId, reviewStatus])
+  @@index([sessionId, itemType])
+  @@map("important_items")
+}
+
+model ConfirmationAction {
+  id              String    @id @default(uuid())
+  sessionId       String    @map("session_id")
+  actionType      String    @map("action_type")
+  targetType      String?   @map("target_type")
+  targetId        String?   @map("target_id")
+  message         String?
+  handledByUserId String?   @map("handled_by_user_id")
+  handledAt       DateTime? @map("handled_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  session       Session @relation(fields: [sessionId], references: [id])
+  handledByUser User?   @relation("HandledBy", fields: [handledByUserId], references: [id])
+
+  @@index([sessionId, createdAt])
+  @@map("confirmation_actions")
+}
+
+model MessageTemplate {
+  id               String   @id @default(uuid())
+  organizationId   String   @map("organization_id")
+  facilityId       String?  @map("facility_id")
+  category         String
+  title            String
+  body             String
+  easyJapaneseBody String?  @map("easy_japanese_body")
+  language         String   @default("ja")
+  isActive         Boolean  @default(true) @map("is_active")
+  sortOrder        Int      @default(0) @map("sort_order")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  facility     Facility?    @relation(fields: [facilityId], references: [id])
+
+  @@index([organizationId, category])
+  @@index([facilityId])
+  @@map("message_templates")
+}
+
+model CallNotification {
+  id           String   @id @default(uuid())
+  sessionId    String   @map("session_id")
+  counterId    String?  @map("counter_id")
+  callNumber   String?  @map("call_number")
+  title        String
+  body         String
+  priority     String   @default("normal")
+  sentByUserId String?  @map("sent_by_user_id")
+  sentAt       DateTime @map("sent_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  session    Session  @relation(fields: [sessionId], references: [id])
+  counter    Counter? @relation(fields: [counterId], references: [id])
+  sentByUser User?    @relation(fields: [sentByUserId], references: [id])
+
+  @@index([sessionId, sentAt])
+  @@index([counterId, sentAt])
+  @@map("call_notifications")
+}
+
+model LensEvent {
+  id             String    @id @default(uuid())
+  sessionId      String    @map("session_id")
+  adapterType    String    @map("adapter_type")
+  mode           String
+  title          String?
+  body           String
+  priority       String    @default("normal")
+  actionsJson    String?   @map("actions_json")
+  deliveryStatus String    @default("queued") @map("delivery_status")
+  errorMessage   String?   @map("error_message")
+  sentAt         DateTime? @map("sent_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  session Session @relation(fields: [sessionId], references: [id])
+
+  @@index([sessionId, createdAt])
+  @@map("lens_events")
+}
+
+model AuditLog {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  facilityId     String?  @map("facility_id")
+  actorUserId    String?  @map("actor_user_id")
+  action         String
+  resourceType   String   @map("resource_type")
+  resourceId     String?  @map("resource_id")
+  ipAddress      String?  @map("ip_address")
+  userAgent      String?  @map("user_agent")
+  metadataJson   String?  @map("metadata_json")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  facility     Facility?    @relation(fields: [facilityId], references: [id])
+  actorUser    User?        @relation(fields: [actorUserId], references: [id])
+
+  @@index([organizationId, createdAt])
+  @@index([actorUserId, createdAt])
+  @@map("audit_logs")
+}
