@@ -6,3 +6,5 @@ dev.db-journal
 .env.local
 .env.*.local
 app/src/generated/
+*.pptx
+*.docx
