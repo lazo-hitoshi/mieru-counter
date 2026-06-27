@@ -1,16 +1,13 @@
 import { PrismaClient } from "@/generated/prisma/client";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
-import path from "path";
+import { PrismaNeon } from "@prisma/adapter-neon";
+import { neon } from "@neondatabase/serverless";
 
 function createPrismaClient() {
-  const tursoUrl = process.env.TURSO_DATABASE_URL;
-  const tursoToken = process.env.TURSO_AUTH_TOKEN;
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) throw new Error("DATABASE_URL is not set");
 
-  const adapterConfig = tursoUrl
-    ? { url: tursoUrl, authToken: tursoToken }
-    : { url: `file:${path.resolve(process.cwd(), "dev.db")}` };
-
-  const adapter = new PrismaLibSql(adapterConfig);
+  const sql = neon(databaseUrl);
+  const adapter = new PrismaNeon(sql);
   return new PrismaClient({ adapter });
 }
 
