@@ -10,6 +10,8 @@
 | 想定利用場所 | 薬局、診療所、自治体窓口、銀行、ホテルなど |
 | 初期ターゲット | 薬局、診療所 |
 | 作成日 | 2026-06-27 |
+| 最終更新日 | 2026-06-28 |
+| 本番URL | https://mieru-counter.vercel.app |
 
 ## 2. サービス概要
 
@@ -132,6 +134,17 @@ flowchart LR
   API <--> AI["重要事項抽出モジュール"]
   API <--> RT["リアルタイム通信"]
 ```
+
+### 8.1 現在のデプロイ構成（MVP）
+
+| 項目 | 技術 |
+|---|---|
+| フレームワーク | Next.js 16（App Router） |
+| ホスティング | Vercel（Hobby） |
+| データベース | Supabase PostgreSQL（ap-southeast-2） |
+| ORM | Prisma v7（@prisma/adapter-pg） |
+| リポジトリ | GitHub（lazo-hitoshi/mieru-counter） |
+| デプロイ | mainブランチへのpush時に自動デプロイ |
 
 ## 9. 画面要件
 
