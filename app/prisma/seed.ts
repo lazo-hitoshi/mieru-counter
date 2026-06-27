@@ -1,14 +1,12 @@
 import { PrismaClient } from "../src/generated/prisma/client.js";
 import { PrismaNeon } from "@prisma/adapter-neon";
-import { Pool } from "@neondatabase/serverless";
 import { randomUUID } from "crypto";
 import { hashSync } from "bcryptjs";
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL is not set");
 
-const pool = new Pool({ connectionString: databaseUrl });
-const adapter = new PrismaNeon(pool);
+const adapter = new PrismaNeon({ connectionString: databaseUrl });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
