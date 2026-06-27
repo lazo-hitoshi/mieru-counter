@@ -7,8 +7,14 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dbPath = path.resolve(__dirname, "..", "dev.db");
-const adapter = new PrismaLibSql({ url: `file:${dbPath}` });
+const tursoUrl = process.env.TURSO_DATABASE_URL;
+const tursoToken = process.env.TURSO_AUTH_TOKEN;
+
+const adapterConfig = tursoUrl
+  ? { url: tursoUrl, authToken: tursoToken }
+  : { url: `file:${path.resolve(__dirname, "..", "dev.db")}` };
+
+const adapter = new PrismaLibSql(adapterConfig);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
