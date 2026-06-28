@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useSessionEvents } from "@/hooks/use-session-events";
+import { useSessionPolling } from "@/hooks/use-session-polling";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { HelpGuide } from "@/components/help-guide";
 import { SessionCodeShare } from "@/components/session-code-share";
@@ -142,34 +142,29 @@ export default function StaffPage() {
   const transcriptEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // SSE real-time events
-  useSessionEvents(activeSession?.id || null, {
-    "transcript.created": (data) => {
-      setTranscripts((prev) => [...prev, data as TranscriptEntry]);
-    },
-    "important_item.candidate": (data) => {
-      setImportantItems((prev) => [...prev, data as ImportantItem]);
-    },
-    "important_item.sent": (data) => {
-      const item = data as ImportantItem;
-      setImportantItems((prev) =>
-        prev.map((i) => (i.id === item.id ? item : i))
-      );
-    },
-    "confirmation.created": (data) => {
-      const action = data as ConfirmationAction;
-      setConfirmations((prev) => [action, ...prev]);
-      setNewConfirmations((prev) => [...prev, action.id]);
-      setTimeout(() => {
-        setNewConfirmations((prev) => prev.filter((id) => id !== action.id));
-      }, 8000);
-    },
-    "session.ended": () => {
-      if (activeSession) {
-        setActiveSession({ ...activeSession, status: "ended" });
-        loadSessions();
+  // Polling for real-time updates
+  useSessionPolling(activeSession?.id || null, {
+    onTranscripts: useCallback((items: unknown[]) => {
+      setTranscripts((prev) => [...prev, ...(items as TranscriptEntry[])]);
+    }, []),
+    onConfirmations: useCallback((items: unknown[]) => {
+      const actions = items as ConfirmationAction[];
+      setConfirmations((prev) => [...actions, ...prev]);
+      setNewConfirmations((prev) => [...prev, ...actions.map((a) => a.id)]);
+      for (const action of actions) {
+        setTimeout(() => {
+          setNewConfirmations((prev) => prev.filter((id) => id !== action.id));
+        }, 8000);
       }
-    },
+    }, []),
+    onImportantItems: useCallback((items: unknown[]) => {
+      setImportantItems(items as ImportantItem[]);
+    }, []),
+    onSessionEnded: useCallback(() => {
+      setActiveSession((prev) => prev ? { ...prev, status: "ended" } : null);
+      loadSessions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
   });
 
   // Speech recognition

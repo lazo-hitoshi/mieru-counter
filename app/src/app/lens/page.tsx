@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useSessionEvents } from "@/hooks/use-session-events";
+import { useState, useCallback, useRef } from "react";
+import { useSessionPolling } from "@/hooks/use-session-polling";
 import { HomeButton } from "@/components/home-button";
 
 type LensDisplay = {
@@ -22,40 +22,39 @@ export default function LensPreview() {
   const [connected, setConnected] = useState(false);
   const [history, setHistory] = useState<LensDisplay[]>([]);
 
-  // SSE real-time events
-  useSessionEvents(connected ? sessionId : null, {
-    "transcript.created": useCallback((data: unknown) => {
-      const entry = data as { originalText: string; displayText: string };
-      const d: LensDisplay = {
-        mode: "caption",
-        body: entry.displayText || entry.originalText,
-        priority: "normal",
-      };
-      setDisplay(d);
-      setHistory((prev) => [...prev.slice(-19), d]);
+  const lastTranscriptCount = useRef(0);
+
+  // Polling for real-time updates
+  useSessionPolling(connected ? sessionId : null, {
+    onTranscripts: useCallback((items: unknown[]) => {
+      const entries = items as { originalText: string; displayText: string }[];
+      if (entries.length > 0) {
+        const entry = entries[entries.length - 1];
+        const d: LensDisplay = {
+          mode: "caption",
+          body: entry.displayText || entry.originalText,
+          priority: "normal",
+        };
+        setDisplay(d);
+        setHistory((prev) => [...prev.slice(-19), d]);
+      }
     }, []),
-    "important_item.sent": useCallback((data: unknown) => {
-      const item = data as { title: string; body: string; priority: string };
-      const d: LensDisplay = {
-        mode: "important",
-        title: item.title,
-        body: item.body,
-        priority: item.priority as LensDisplay["priority"],
-      };
-      setDisplay(d);
-      setHistory((prev) => [...prev.slice(-19), d]);
+    onImportantItems: useCallback((items: unknown[]) => {
+      const allItems = items as { title: string; body: string; priority: string; reviewStatus: string }[];
+      const sent = allItems.filter((i) => i.reviewStatus === "sent");
+      if (sent.length > 0) {
+        const item = sent[sent.length - 1];
+        const d: LensDisplay = {
+          mode: "important",
+          title: item.title,
+          body: item.body,
+          priority: item.priority as LensDisplay["priority"],
+        };
+        setDisplay(d);
+        setHistory((prev) => [...prev.slice(-19), d]);
+      }
     }, []),
-    "call.sent": useCallback((data: unknown) => {
-      const notif = data as { callNumber: string | null; body: string };
-      const d: LensDisplay = {
-        mode: "call",
-        body: notif.callNumber || notif.body,
-        priority: "urgent",
-      };
-      setDisplay(d);
-      setHistory((prev) => [...prev.slice(-19), d]);
-    }, []),
-    "session.ended": useCallback(() => {
+    onSessionEnded: useCallback(() => {
       setDisplay({ mode: "idle", body: "セッション終了", priority: "normal" });
     }, []),
   });

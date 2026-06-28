@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useSessionEvents } from "@/hooks/use-session-events";
+import { useSessionPolling } from "@/hooks/use-session-polling";
 import { HelpGuide } from "@/components/help-guide";
 
 const VISITOR_SESSION_HELP_STEPS = [
@@ -98,29 +98,24 @@ export default function VisitorSession({
   const transcriptEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // SSE real-time events
-  useSessionEvents(sessionId, {
-    "transcript.created": useCallback((data: unknown) => {
-      const entry = data as TranscriptEntry;
-      setTranscripts((prev) => [...prev, entry]);
-      setCaptionFade(false);
-      setLatestCaption(entry);
-      setTimeout(() => setCaptionFade(true), 50);
+  // Polling for real-time updates
+  useSessionPolling(sessionId, {
+    onTranscripts: useCallback((items: unknown[]) => {
+      const entries = items as TranscriptEntry[];
+      setTranscripts((prev) => [...prev, ...entries]);
+      if (entries.length > 0) {
+        const latest = entries[entries.length - 1];
+        setCaptionFade(false);
+        setLatestCaption(latest);
+        setTimeout(() => setCaptionFade(true), 50);
+      }
     }, []),
-    "important_item.sent": useCallback((data: unknown) => {
-      const item = data as ImportantItem;
-      setImportantItems((prev) => {
-        if (prev.some((i) => i.id === item.id)) {
-          return prev.map((i) => (i.id === item.id ? item : i));
-        }
-        return [...prev, item];
-      });
+    onImportantItems: useCallback((items: unknown[]) => {
+      const allItems = items as ImportantItem[];
+      const sent = allItems.filter((i) => i.reviewStatus === "sent");
+      setImportantItems(sent);
     }, []),
-    "call.sent": useCallback((data: unknown) => {
-      setCallNotification(data as CallNotification);
-      setTimeout(() => setCallNotification(null), 15000);
-    }, []),
-    "session.ended": useCallback(() => {
+    onSessionEnded: useCallback(() => {
       setSessionEnded(true);
     }, []),
   });
