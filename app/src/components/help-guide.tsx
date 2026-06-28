@@ -75,7 +75,7 @@ export function HelpGuide({
     <>
       <button
         onClick={() => setOpen(true)}
-        className={`fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full shadow-lg ${colors.button} flex items-center justify-center text-2xl active:scale-95 transition-transform`}
+        className={`fixed top-3 right-3 z-40 w-10 h-10 rounded-full shadow-lg ${colors.button} flex items-center justify-center text-lg active:scale-95 transition-transform opacity-70 hover:opacity-100`}
         aria-label="使い方ガイド"
       >
         ？
