@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import VisitorSession from "./session";
 import { HelpGuide } from "@/components/help-guide";
+import { HomeButton } from "@/components/home-button";
 
 const VISITOR_JOIN_HELP_STEPS = [
   {
@@ -92,7 +93,10 @@ export default function VisitorPage() {
   }
 
   return (
-    <main className="min-h-screen bg-green-50 flex flex-col items-center justify-center p-6">
+    <main className="min-h-screen bg-green-50 flex flex-col items-center justify-center p-6 relative">
+      <div className="absolute top-4 left-4">
+        <HomeButton color="green" />
+      </div>
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-green-900">Mieru Counter</h1>

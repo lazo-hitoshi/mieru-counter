@@ -5,6 +5,7 @@ import { useSessionEvents } from "@/hooks/use-session-events";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { HelpGuide } from "@/components/help-guide";
 import { SessionCodeShare } from "@/components/session-code-share";
+import { HomeButton } from "@/components/home-button";
 
 const STAFF_HELP_STEPS = [
   {
@@ -345,6 +346,9 @@ export default function StaffPage() {
               <h1 className="text-base font-bold text-slate-900">Mieru Counter</h1>
               <p className="text-xs text-slate-400">スタッフ画面</p>
             </div>
+          </div>
+          <div className="mt-3">
+            <HomeButton color="slate" />
           </div>
         </div>
 

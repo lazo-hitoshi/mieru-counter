@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useSessionEvents } from "@/hooks/use-session-events";
+import { HomeButton } from "@/components/home-button";
 
 type LensDisplay = {
   mode: "caption" | "important" | "call" | "idle";
@@ -110,7 +111,10 @@ export default function LensPreview() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-6">
+    <div className="min-h-screen bg-black flex items-center justify-center p-6 relative">
+      <div className="absolute top-4 left-4">
+        <HomeButton color="white" />
+      </div>
       <div className="w-full max-w-md">
         {/* Lens viewport */}
         <div className="border border-gray-800 rounded-3xl overflow-hidden bg-gradient-to-b from-gray-900/80 to-black shadow-2xl shadow-purple-900/10">

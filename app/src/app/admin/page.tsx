@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { HomeButton } from "@/components/home-button";
 
 type Organization = {
   id: string;
@@ -92,10 +93,11 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
+      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
         <h1 className="text-xl font-bold text-gray-900">
           Mieru Counter 管理画面
         </h1>
+        <HomeButton color="slate" />
       </header>
 
       <div className="flex border-b border-gray-200 bg-white px-6">
