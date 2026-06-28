@@ -234,7 +234,7 @@ export default function VisitorSession({
 
       {sessionEnded && (
         <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 text-center">
-          <div className="text-6xl mb-6">🙏</div>
+          <div className="text-6xl mb-6">🙇</div>
           <h2 className="text-2xl font-bold text-slate-800 mb-3">
             ご利用ありがとうございました
           </h2>
