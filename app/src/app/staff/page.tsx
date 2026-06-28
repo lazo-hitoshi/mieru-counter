@@ -139,6 +139,16 @@ export default function StaffPage() {
   const [showCallInput, setShowCallInput] = useState(false);
   const [showCodeShare, setShowCodeShare] = useState(false);
   const [sending, setSending] = useState(false);
+  const [showNewSessionModal, setShowNewSessionModal] = useState(false);
+  const [newVisitorName, setNewVisitorName] = useState("");
+  const [staffDisplayName, setStaffDisplayName] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("mieru-staff-name") || "";
+    }
+    return "";
+  });
+  const [showStaffNameEdit, setShowStaffNameEdit] = useState(false);
+  const [staffNameInput, setStaffNameInput] = useState("");
   const transcriptEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -199,6 +209,11 @@ export default function StaffPage() {
     if (res.ok) setTemplates(await res.json());
   }
 
+  function openNewSessionModal() {
+    setNewVisitorName("");
+    setShowNewSessionModal(true);
+  }
+
   async function createSession() {
     const facilitiesRes = await fetch("/api/facilities");
     if (!facilitiesRes.ok) return;
@@ -209,17 +224,35 @@ export default function StaffPage() {
       return;
     }
 
+    const payload: Record<string, unknown> = {
+      counterId: facilities[0].counters[0].id,
+    };
+    if (newVisitorName.trim()) {
+      payload.visitorLabel = newVisitorName.trim();
+    }
+    if (staffDisplayName) {
+      payload.staffDisplayName = staffDisplayName;
+    }
+
     const res = await fetch("/api/sessions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ counterId: facilities[0].counters[0].id }),
+      body: JSON.stringify(payload),
     });
 
     if (res.ok) {
       const newSession = await res.json();
+      setShowNewSessionModal(false);
       await loadSessions();
       selectSession(newSession);
     }
+  }
+
+  function saveStaffName() {
+    const name = staffNameInput.trim();
+    setStaffDisplayName(name);
+    localStorage.setItem("mieru-staff-name", name);
+    setShowStaffNameEdit(false);
   }
 
   async function selectSession(session: Session) {
@@ -347,12 +380,18 @@ export default function StaffPage() {
           </div>
         </div>
 
-        <div className="p-3">
+        <div className="p-3 space-y-2">
           <button
-            onClick={createSession}
+            onClick={openNewSessionModal}
             className="w-full py-2.5 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all text-sm font-medium shadow-sm"
           >
             + 新しいセッション
+          </button>
+          <button
+            onClick={() => { setStaffNameInput(staffDisplayName); setShowStaffNameEdit(true); }}
+            className="w-full py-2 px-4 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-all text-xs"
+          >
+            {staffDisplayName ? `担当: ${staffDisplayName}` : "担当者名を設定"}
           </button>
         </div>
 
@@ -424,8 +463,13 @@ export default function StaffPage() {
                       {activeSession.status === "active" ? "対応中" : activeSession.status === "ended" ? "終了" : "待機中"}
                     </span>
                   </div>
+                  {activeSession.visitorLabel && (
+                    <p className="text-sm text-slate-700 font-medium mt-0.5">
+                      患者: {activeSession.visitorLabel}
+                    </p>
+                  )}
                   <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1.5">
-                    利用者接続コード:{" "}
+                    接続コード:{" "}
                     <code className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-600 font-semibold">
                       {activeSession.sessionCode}
                     </code>
@@ -751,6 +795,82 @@ export default function StaffPage() {
           sessionCode={activeSession.sessionCode}
           onClose={() => setShowCodeShare(false)}
         />
+      )}
+
+      {/* New session modal */}
+      {showNewSessionModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6">
+            <h3 className="text-lg font-bold text-slate-800 mb-4">新しいセッション</h3>
+            <label className="block mb-4">
+              <span className="text-sm font-medium text-slate-700">患者名（利用者名）</span>
+              <input
+                type="text"
+                value={newVisitorName}
+                onChange={(e) => setNewVisitorName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && createSession()}
+                placeholder="例: 山田太郎"
+                className="mt-1 block w-full border border-slate-300 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                autoFocus
+              />
+              <p className="text-xs text-slate-400 mt-1">
+                処方箋の患者名と番号を照合するために入力してください
+              </p>
+            </label>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowNewSessionModal(false)}
+                className="flex-1 py-2.5 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 text-sm font-medium"
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={createSession}
+                className="flex-1 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 text-sm font-medium"
+              >
+                作成
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Staff name edit modal */}
+      {showStaffNameEdit && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6">
+            <h3 className="text-lg font-bold text-slate-800 mb-4">担当者名の設定</h3>
+            <label className="block mb-4">
+              <span className="text-sm font-medium text-slate-700">表示名</span>
+              <input
+                type="text"
+                value={staffNameInput}
+                onChange={(e) => setStaffNameInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && saveStaffName()}
+                placeholder="例: 田中"
+                className="mt-1 block w-full border border-slate-300 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                autoFocus
+              />
+              <p className="text-xs text-slate-400 mt-1">
+                利用者画面に「担当: ○○」と表示されます。空欄で非表示にできます。
+              </p>
+            </label>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowStaffNameEdit(false)}
+                className="flex-1 py-2.5 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 text-sm font-medium"
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={saveStaffName}
+                className="flex-1 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 text-sm font-medium"
+              >
+                保存
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

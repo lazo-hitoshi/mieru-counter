@@ -44,6 +44,7 @@ export default function VisitorPage() {
   const [sessionInfo, setSessionInfo] = useState<{
     facilityName: string;
     counterName: string;
+    staffDisplayName: string | null;
   } | null>(null);
   const [error, setError] = useState("");
 
@@ -73,6 +74,7 @@ export default function VisitorPage() {
     setSessionInfo({
       facilityName: data.facilityName,
       counterName: data.counterName,
+      staffDisplayName: data.staffDisplayName || null,
     });
 
     await fetch(`/api/sessions/${data.sessionId}`, {
@@ -88,6 +90,7 @@ export default function VisitorPage() {
         sessionId={joinedSessionId}
         facilityName={sessionInfo.facilityName}
         counterName={sessionInfo.counterName}
+        staffDisplayName={sessionInfo.staffDisplayName}
       />
     );
   }

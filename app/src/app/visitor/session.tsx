@@ -78,10 +78,12 @@ export default function VisitorSession({
   sessionId,
   facilityName,
   counterName,
+  staffDisplayName,
 }: {
   sessionId: string;
   facilityName: string;
   counterName: string;
+  staffDisplayName?: string | null;
 }) {
   const [transcripts, setTranscripts] = useState<TranscriptEntry[]>([]);
   const [importantItems, setImportantItems] = useState<ImportantItem[]>([]);
@@ -199,7 +201,10 @@ export default function VisitorSession({
       <header className="bg-emerald-600 text-white px-4 py-3 flex items-center justify-between safe-area-top shadow-lg">
         <div>
           <p className="font-semibold text-sm">{facilityName}</p>
-          <p className="text-[10px] text-emerald-200">{counterName}</p>
+          <p className="text-[10px] text-emerald-200">
+            {counterName}
+            {staffDisplayName && ` · 担当: ${staffDisplayName}`}
+          </p>
         </div>
         <div className="flex items-center gap-1.5">
           <button

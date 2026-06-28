@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { counterId, staffUserId, visitorLabel, language } = body;
+  const { counterId, staffUserId, visitorLabel, language, staffDisplayName } = body;
 
   const counter = await prisma.counter.findUnique({
     where: { id: counterId },
@@ -35,6 +35,9 @@ export async function POST(request: NextRequest) {
   if (!counter) {
     return Response.json({ error: "Counter not found" }, { status: 404 });
   }
+
+  const metadata: Record<string, string> = {};
+  if (staffDisplayName) metadata.staffDisplayName = staffDisplayName;
 
   const session = await prisma.session.create({
     data: {
@@ -48,6 +51,7 @@ export async function POST(request: NextRequest) {
       visitorLabel: visitorLabel || null,
       language: language || "ja",
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      metadataJson: Object.keys(metadata).length > 0 ? JSON.stringify(metadata) : null,
     },
     include: {
       counter: true,

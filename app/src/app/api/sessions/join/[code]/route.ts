@@ -26,10 +26,19 @@ export async function GET(
     return Response.json({ error: "Session has expired" }, { status: 410 });
   }
 
+  let staffDisplayName: string | null = null;
+  if (session.metadataJson) {
+    try {
+      const meta = JSON.parse(session.metadataJson);
+      if (meta.staffDisplayName) staffDisplayName = meta.staffDisplayName;
+    } catch { /* ignore */ }
+  }
+
   return Response.json({
     sessionId: session.id,
     facilityName: session.counter.facility.name,
     counterName: session.counter.name,
+    staffDisplayName,
     status: session.status,
     language: session.language,
   });
