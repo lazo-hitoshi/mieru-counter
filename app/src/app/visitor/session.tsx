@@ -228,14 +228,42 @@ export default function VisitorSession({
       </header>
 
       {sessionEnded && (
-        <div className="bg-slate-100 border-b border-slate-200 px-4 py-2 text-center">
-          <p className="text-sm text-slate-600 font-medium">
-            このセッションは終了しました
+        <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 text-center">
+          <div className="text-6xl mb-6">🙏</div>
+          <h2 className="text-2xl font-bold text-slate-800 mb-3">
+            ご利用ありがとうございました
+          </h2>
+          <p className="text-base text-slate-600 mb-2">
+            対応は終了しました。
           </p>
+          <p className="text-base text-slate-600 mb-8">
+            この画面を閉じてお帰りください。
+          </p>
+
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 max-w-sm w-full mb-6">
+            <p className="text-sm font-semibold text-blue-800 mb-2">📝 会話メモを確認する</p>
+            <p className="text-xs text-blue-600 mb-3">
+              本日の重要事項や会話内容を確認できます。
+            </p>
+            <button
+              onClick={() => setShowMemo(true)}
+              className="w-full py-2.5 bg-blue-600 text-white rounded-xl font-medium text-sm hover:bg-blue-700 active:scale-95 transition-all"
+            >
+              会話メモを見る
+            </button>
+          </div>
+
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 max-w-sm w-full">
+            <p className="text-xs text-slate-500">
+              💡 このページを閉じるには、ブラウザの「×」ボタンを押すか、
+              ブラウザのタブを閉じてください。
+              個人情報は保存されません。
+            </p>
+          </div>
         </div>
       )}
 
-      {!showMemo ? (
+      {!sessionEnded && !showMemo ? (
         <>
           {/* Live caption */}
           <div className="bg-slate-50 border-b-2 border-emerald-200 px-6 py-8 min-h-[140px] flex items-center justify-center">
