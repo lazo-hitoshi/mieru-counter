@@ -2,6 +2,40 @@
 
 import { useState } from "react";
 import VisitorSession from "./session";
+import { HelpGuide } from "@/components/help-guide";
+
+const VISITOR_JOIN_HELP_STEPS = [
+  {
+    icon: "👂",
+    title: "利用者画面の使い方",
+    description:
+      "この画面から窓口セッションに参加できます。\nスタッフの言葉がリアルタイムで表示されます。",
+  },
+  {
+    icon: "🔢",
+    title: "接続コードを入力",
+    description:
+      "窓口のスタッフから8桁の接続コード\n（例: A1B2C3D4）を受け取り、\n上の入力欄に入力してください。",
+  },
+  {
+    icon: "📱",
+    title: "セッションに参加",
+    description:
+      "コードを入力したら「参加する」ボタンを\nタップしてください。\nスタッフの会話がリアルタイムで\n字幕表示されます。",
+  },
+  {
+    icon: "✏️",
+    title: "文字で伝える",
+    description:
+      "話すことが難しい方は\n「✏️ 文字で伝える」ボタンから\n文字を入力してスタッフに伝えられます。",
+  },
+  {
+    icon: "👆",
+    title: "確認ボタン",
+    description:
+      "「理解しました」「もう一度」「ゆっくり」など\nボタンを押すだけでスタッフに伝わります。\n声を出さなくても大丈夫です。",
+  },
+];
 
 export default function VisitorPage() {
   const [sessionCode, setSessionCode] = useState("");
@@ -89,6 +123,7 @@ export default function VisitorPage() {
           窓口のスタッフから接続コードを受け取ってください
         </p>
       </div>
+      <HelpGuide steps={VISITOR_JOIN_HELP_STEPS} buttonColor="emerald" />
     </main>
   );
 }

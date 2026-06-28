@@ -1,4 +1,38 @@
 import Link from "next/link";
+import { HelpGuide } from "@/components/help-guide";
+
+const HOME_HELP_STEPS = [
+  {
+    icon: "👋",
+    title: "Mieru Counterへようこそ",
+    description:
+      "このサービスは、聴覚障害者・難聴者・高齢者が\n薬局や病院の窓口で会話を理解しやすくするためのツールです。",
+  },
+  {
+    icon: "🧑‍💼",
+    title: "スタッフ画面",
+    description:
+      "窓口のスタッフが使う画面です。\nセッションを作成し、文字や音声で\n利用者へメッセージを送れます。",
+  },
+  {
+    icon: "👂",
+    title: "利用者画面",
+    description:
+      "利用者（お客様）が使う画面です。\nスタッフから受け取った接続コードを入力して参加します。\nスタッフの言葉がリアルタイムで字幕表示されます。",
+  },
+  {
+    icon: "✏️",
+    title: "文字で伝える機能",
+    description:
+      "話すことが難しい利用者も\n「文字で伝える」ボタンからテキストで\nスタッフへメッセージを送れます。",
+  },
+  {
+    icon: "🚀",
+    title: "さっそく始めましょう",
+    description:
+      "スタッフの方は「スタッフ画面」へ、\n利用者の方は「利用者画面」へ\nお進みください。",
+  },
+];
 
 export default function Home() {
   return (
@@ -9,6 +43,7 @@ export default function Home() {
           聴覚障害者・難聴者・高齢者が窓口で会話内容を理解しやすくするサービス
         </p>
       </div>
+      <HelpGuide steps={HOME_HELP_STEPS} buttonColor="blue" />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl">
         <Link

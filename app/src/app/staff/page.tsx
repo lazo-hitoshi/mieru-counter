@@ -3,6 +3,46 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSessionEvents } from "@/hooks/use-session-events";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
+import { HelpGuide } from "@/components/help-guide";
+
+const STAFF_HELP_STEPS = [
+  {
+    icon: "🏥",
+    title: "スタッフ画面の使い方",
+    description:
+      "この画面では窓口セッションを管理し、\n利用者へメッセージを送信できます。",
+  },
+  {
+    icon: "➕",
+    title: "セッションの作成",
+    description:
+      "左サイドバーの「+ 新しいセッション」ボタンで\nセッションを作成します。\n表示される接続コード（8桁）を利用者にお伝えください。",
+  },
+  {
+    icon: "💬",
+    title: "メッセージの送信",
+    description:
+      "画面下部の入力欄にテキストを入力して送信します。\n🎙️ボタンで音声入力も可能です。\n📋ボタンで定型文を選択できます。",
+  },
+  {
+    icon: "👂",
+    title: "利用者からの反応",
+    description:
+      "利用者が「理解しました」「もう一度」などの\nボタンを押すと、画面に通知が表示されます。\n利用者からのテキストメッセージも表示されます。",
+  },
+  {
+    icon: "📋",
+    title: "重要事項カード",
+    description:
+      "会話の中から重要な情報（薬の名前、\n予約日時、支払い金額など）が\n自動で抽出されます。\n確認して利用者に送信できます。",
+  },
+  {
+    icon: "📢",
+    title: "呼び出し機能",
+    description:
+      "「📢 呼び出し」ボタンで利用者の端末に\n呼び出し番号を大きく表示できます。\n待合室にいる利用者を呼ぶ時に便利です。",
+  },
+];
 
 type Session = {
   id: string;
@@ -698,6 +738,7 @@ export default function StaffPage() {
           </div>
         )}
       </main>
+      <HelpGuide steps={STAFF_HELP_STEPS} buttonColor="blue" />
     </div>
   );
 }

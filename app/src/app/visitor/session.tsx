@@ -2,6 +2,34 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSessionEvents } from "@/hooks/use-session-events";
+import { HelpGuide } from "@/components/help-guide";
+
+const VISITOR_SESSION_HELP_STEPS = [
+  {
+    icon: "📺",
+    title: "字幕エリア",
+    description:
+      "画面の上部にスタッフの言葉が\nリアルタイムで大きく表示されます。\nA+/A-ボタンで文字サイズを変えられます。",
+  },
+  {
+    icon: "✏️",
+    title: "文字で伝える",
+    description:
+      "「✏️ 文字で伝える」ボタンを押すと\nテキスト入力欄が現れます。\n話せなくても文字でスタッフに伝えられます。",
+  },
+  {
+    icon: "👆",
+    title: "確認ボタン",
+    description:
+      "「✓ 理解しました」→ わかった時\n「🔄 もう一度」→ 聞き直したい時\n「🐢 ゆっくり」→ ゆっくり話してほしい時\nボタンを押すだけでスタッフに伝わります。",
+  },
+  {
+    icon: "📝",
+    title: "会話メモ",
+    description:
+      "右上の「会話メモ」ボタンで\n今までの会話履歴と重要事項を\nまとめて確認できます。",
+  },
+];
 
 type TranscriptEntry = {
   id: string;
@@ -418,6 +446,7 @@ export default function VisitorSession({
           <div ref={transcriptEndRef} />
         </div>
       )}
+      <HelpGuide steps={VISITOR_SESSION_HELP_STEPS} buttonColor="emerald" />
     </div>
   );
 }
