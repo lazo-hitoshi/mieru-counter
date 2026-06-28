@@ -57,21 +57,21 @@ type CallNotification = {
 };
 
 const ITEM_TYPE_ICONS: Record<string, string> = {
-  medicine: "💊",
-  appointment: "📅",
-  payment: "💰",
-  place: "📍",
-  document: "📄",
-  warning: "⚠️",
-  next_action: "➡️",
+  medicine: "薬",
+  appointment: "予約",
+  payment: "会計",
+  place: "場所",
+  document: "書類",
+  warning: "注意",
+  next_action: "次へ",
 };
 
 const CONFIRMATION_BUTTONS = [
   { type: "understood", label: "理解しました", icon: "✓", color: "bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800" },
-  { type: "repeat", label: "もう一度", icon: "🔄", color: "bg-orange-500 hover:bg-orange-600 active:bg-orange-700" },
-  { type: "slower", label: "ゆっくり", icon: "🐢", color: "bg-amber-500 hover:bg-amber-600 active:bg-amber-700" },
-  { type: "write_text", label: "文字で", icon: "✏️", color: "bg-blue-500 hover:bg-blue-600 active:bg-blue-700" },
-  { type: "sign_language", label: "手話通訳", icon: "🤟", color: "bg-purple-600 hover:bg-purple-700 active:bg-purple-800" },
+  { type: "repeat", label: "もう一度", icon: "↻", color: "bg-orange-500 hover:bg-orange-600 active:bg-orange-700" },
+  { type: "slower", label: "ゆっくり", icon: "▷", color: "bg-amber-500 hover:bg-amber-600 active:bg-amber-700" },
+  { type: "write_text", label: "文字入力", icon: "Aa", color: "bg-blue-500 hover:bg-blue-600 active:bg-blue-700" },
+  { type: "sign_language", label: "手話通訳", icon: "手", color: "bg-purple-600 hover:bg-purple-700 active:bg-purple-800" },
 ];
 
 export default function VisitorSession({
@@ -234,7 +234,9 @@ export default function VisitorSession({
 
       {sessionEnded && (
         <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 text-center">
-          <div className="text-6xl mb-6">🙇</div>
+          <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-6">
+            <span className="text-emerald-600 text-3xl font-bold">✓</span>
+          </div>
           <h2 className="text-2xl font-bold text-slate-800 mb-3">
             ご利用ありがとうございました
           </h2>
@@ -246,7 +248,7 @@ export default function VisitorSession({
           </p>
 
           <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 max-w-sm w-full mb-6">
-            <p className="text-sm font-semibold text-blue-800 mb-2">📝 会話メモを確認する</p>
+            <p className="text-sm font-semibold text-blue-800 mb-2">会話メモを確認する</p>
             <p className="text-xs text-blue-600 mb-3">
               本日の重要事項や会話内容を確認できます。
             </p>
@@ -260,9 +262,8 @@ export default function VisitorSession({
 
           <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 max-w-sm w-full">
             <p className="text-xs text-slate-500">
-              💡 このページを閉じるには、ブラウザの「×」ボタンを押すか、
-              ブラウザのタブを閉じてください。
-              個人情報は保存されません。
+              このページを閉じるには、ブラウザの「×」ボタンを押すか、
+              タブを閉じてください。個人情報は保存されません。
             </p>
           </div>
         </div>
@@ -288,7 +289,7 @@ export default function VisitorSession({
               </div>
             ) : (
               <div className="text-center text-slate-400">
-                <div className="text-3xl mb-2">👂</div>
+                <div className="w-8 h-8 border-[3px] border-slate-300 border-t-emerald-500 rounded-full animate-spin mx-auto mb-3" />
                 <p className="text-base">スタッフのメッセージを待っています...</p>
               </div>
             )}
@@ -312,8 +313,8 @@ export default function VisitorSession({
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xl">
-                      {ITEM_TYPE_ICONS[item.itemType] || "📌"}
+                    <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-600">
+                      {ITEM_TYPE_ICONS[item.itemType] || "他"}
                     </span>
                     <span
                       className="font-bold text-slate-800"
@@ -389,7 +390,7 @@ export default function VisitorSession({
                 }`}
                 style={{ fontSize: `${Math.max(fontSize - 6, 12)}px` }}
               >
-                <span className="block text-lg mb-0.5">✏️</span>
+                <span className="block text-base font-bold mb-0.5">Aa</span>
                 {showInput ? "閉じる" : "文字で伝える"}
               </button>
               {CONFIRMATION_BUTTONS.slice(0, 2).map((btn) => (
@@ -400,7 +401,7 @@ export default function VisitorSession({
                   className={`${btn.color} text-white py-3.5 rounded-2xl font-medium transition-all active:scale-95 disabled:opacity-40 shadow-sm`}
                   style={{ fontSize: `${Math.max(fontSize - 6, 12)}px` }}
                 >
-                  <span className="block text-lg mb-0.5">{btn.icon}</span>
+                  <span className="block text-base font-bold mb-0.5">{btn.icon}</span>
                   {btn.label}
                 </button>
               ))}
@@ -414,7 +415,7 @@ export default function VisitorSession({
                   className={`${btn.color} text-white py-3 rounded-2xl font-medium transition-all active:scale-95 disabled:opacity-40 shadow-sm`}
                   style={{ fontSize: `${Math.max(fontSize - 6, 12)}px` }}
                 >
-                  <span className="block text-lg mb-0.5">{btn.icon}</span>
+                  <span className="block text-base font-bold mb-0.5">{btn.icon}</span>
                   {btn.label}
                 </button>
               ))}
@@ -436,7 +437,8 @@ export default function VisitorSession({
                     className="bg-blue-50 border border-blue-200 rounded-xl p-3"
                   >
                     <p className="font-semibold text-sm text-slate-800">
-                      {ITEM_TYPE_ICONS[item.itemType] || "📌"} {item.title}
+                      <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-blue-200 text-blue-700 mr-1.5">{ITEM_TYPE_ICONS[item.itemType] || "他"}</span>
+                      {item.title}
                     </p>
                     <p className="text-sm text-slate-600 mt-0.5">{item.body}</p>
                   </div>
