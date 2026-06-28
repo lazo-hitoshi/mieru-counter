@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import VisitorSession from "./session";
 import { HelpGuide } from "@/components/help-guide";
 
@@ -45,6 +45,14 @@ export default function VisitorPage() {
     counterName: string;
   } | null>(null);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    if (code) {
+      setSessionCode(code.toUpperCase());
+    }
+  }, []);
 
   async function joinSession() {
     if (!sessionCode.trim()) return;

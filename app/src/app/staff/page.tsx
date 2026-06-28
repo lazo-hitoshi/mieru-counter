@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useSessionEvents } from "@/hooks/use-session-events";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { HelpGuide } from "@/components/help-guide";
+import { SessionCodeShare } from "@/components/session-code-share";
 
 const STAFF_HELP_STEPS = [
   {
@@ -135,6 +136,7 @@ export default function StaffPage() {
   const [newConfirmations, setNewConfirmations] = useState<string[]>([]);
   const [callNumber, setCallNumber] = useState("");
   const [showCallInput, setShowCallInput] = useState(false);
+  const [showCodeShare, setShowCodeShare] = useState(false);
   const [sending, setSending] = useState(false);
   const transcriptEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -423,11 +425,17 @@ export default function StaffPage() {
                       {activeSession.status === "active" ? "対応中" : activeSession.status === "ended" ? "終了" : "待機中"}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1.5">
                     利用者接続コード:{" "}
                     <code className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-600 font-semibold">
                       {activeSession.sessionCode}
                     </code>
+                    <button
+                      onClick={() => setShowCodeShare(true)}
+                      className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-medium hover:bg-blue-200 transition-colors"
+                    >
+                      📲 共有
+                    </button>
                   </p>
                 </div>
               </div>
@@ -739,6 +747,12 @@ export default function StaffPage() {
         )}
       </main>
       <HelpGuide steps={STAFF_HELP_STEPS} buttonColor="blue" />
+      {showCodeShare && activeSession && (
+        <SessionCodeShare
+          sessionCode={activeSession.sessionCode}
+          onClose={() => setShowCodeShare(false)}
+        />
+      )}
     </div>
   );
 }
